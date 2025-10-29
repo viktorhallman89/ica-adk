@@ -39,8 +39,6 @@ def fetch_image_from_gcs(bucket_name: str, order_id: str) -> bytes:
 
 def analyze_image(image_data: bytes) -> str:
     """
-    Analyzes the given image bytes using OpenAI's multimodal GPT-4o model.
-    Returns a natural language description of the image content.
     """
 
     return None
