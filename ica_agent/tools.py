@@ -24,6 +24,26 @@ from google.genai.types import GenerateContentConfig, Part
 from PIL import Image
 from io import BytesIO
 import base64
+from google.cloud import storage
+
+
+def fetch_image_from_gcs(bucket_name: str, order_id: str) -> bytes:
+    """
+    Fetches an image from a Google Cloud Storage bucket.
+    Returns the raw bytes.
+    """
+    client = storage.Client(project="hundred-agents25waw-845")
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(order_id + ".png")
+    return blob.download_as_bytes()
+
+def analyze_image(image_data: bytes) -> str:
+    """
+    Analyzes the given image bytes using OpenAI's multimodal GPT-4o model.
+    Returns a natural language description of the image content.
+    """
+
+    return None
 
 
 async def generate_image_data(tool_context: ToolContext, fact: str) -> dict:
