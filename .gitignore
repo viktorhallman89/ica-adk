@@ -11,3 +11,4 @@ wheels/
 cmds.txt
 .env.old
 .env.bak
+.DS_Store
