@@ -9,6 +9,7 @@ dependencies = [
     "google-cloud-aiplatform[adk,agent-engines]",
     "pillow",
     "python-dotenv",
+    "toolbox-core",
 ]
 
 [tool.setuptools]

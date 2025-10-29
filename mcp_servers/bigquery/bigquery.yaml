@@ -1,0 +1,36 @@
+sources:
+  my-bq-source:
+    kind: bigquery
+    project: hundred-agents25waw-845
+
+tools:
+  search_release_notes_bq:
+    kind: bigquery-sql
+    description: |
+      Use this tool to get information on customer orders, based on two parameters, the order ID and the product name.
+    parameters:
+      - name: order_id
+        type: string
+        description: The order_id supplied by the user.
+      - name: product_name
+        type: string
+        description: The product_name supplied by the user.
+    statement: |
+      SELECT 
+        o.order_id, 
+        oi.quantity, 
+        p.product_name, 
+        p.product_id    
+      FROM 
+        `hundred-agents25waw-845`.`customer_data`.`Orders` AS o
+      LEFT JOIN 
+        `hundred-agents25waw-845`.`customer_data`.`Order_Items` AS oi ON o.order_id = oi.order_id
+      LEFT JOIN 
+        `hundred-agents25waw-845`.`customer_data`.`Products` AS p ON oi.product_id = p.product_id
+      WHERE o.order_id = @order_id AND lower(p.product_name) LIKE lower(concat('%', @product_name, '%'));
+    source: my-bq-source
+    
+
+toolsets:
+  my_bq_toolset:
+  - search_release_notes_bq
