@@ -14,6 +14,7 @@
 
 
 from google.adk.agents import Agent, SequentialAgent, LlmAgent
+from google.adk.tools.agent_tool import AgentTool
 from toolbox_core import ToolboxSyncClient
 
 toolbox = ToolboxSyncClient("https://toolbox-489070644303.us-central1.run.app/")
@@ -31,7 +32,7 @@ product_retrieval_agent = LlmAgent(
         "You are a helpful agent who will retrieve order_id, product_id, product_name and the quantity. Ask the user to provide both order_id and product_name that is missing from the delivery. Use the tools to answer the question, by passing in the strict order, the order_id and the product_name. Display all information retrieved by the tool as a JSON object. Pass the product_name to the next agent."
     ),
     tools=tools,
-    output_key="product_name"
+    #output_key="product_name"
 )
 
 # product_retrieval_agent = LlmAgent(
@@ -73,11 +74,11 @@ Your response must be a JSON object with the following keys
     output_key="voucher",
 )
 
-complain_processing_agent = SequentialAgent(
-    name="complain_processing_agent",
-    sub_agents=[product_retrieval_agent, picture_analysis_agent, refund_agent],
-    description="This agent is designed to automate and verify customer complaints regarding missing products in ICA Supermarket online grocery orders, aiming to resolve disputes quickly and accurately using visual evidence",
-)
+# complain_processing_agent = SequentialAgent(
+#     name="complain_processing_agent",
+#     sub_agents=[product_retrieval_agent, picture_analysis_agent, refund_agent],
+#     description="This agent is designed to automate and verify customer complaints regarding missing products in ICA Supermarket online grocery orders, aiming to resolve disputes quickly and accurately using visual evidence",
+# )
 
 
 root_agent = Agent(
@@ -86,11 +87,11 @@ root_agent = Agent(
     instruction="""
       You are an expert customer service agant. Users will contact you if they have receievd a delivery where an item is missing.
       Welcome the user and ask for an order_id and a the name of the product that was missing from the delivery.
-      You should 
-      When the user as provided you with a valid year:
-      1. You should respond with 1 facts from the year provided by the user
-      2. Based on this fact from the previous step, call the `generate_image_data` and display the image_artifact in the response.
+      You should only accept text and not any image oor video
+      When the user as provided you with a valid order_id and product_name:
+      1. You should check with the `product_retrieval_agent` whether the product is missing or not from the list of ordered items. If the output key from this agent contains a product_name, go to step 2 below. Otherwise, let the user know that there isn't any missing item.
+      2. Generate a picture based on the product_name.
       You should not rely on the previous history.
     """,
-    tools=[generate_image_data, load_artifacts_tool],
+    tools=[AgentTool(product_retrieval_agent)],
 )
