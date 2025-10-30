@@ -33,29 +33,8 @@ product_retrieval_agent = LlmAgent(
         "You are a helpful agent who will retrieve order_id, product_id, product_name and the quantity. Ask the user to provide both order_id and product_name that is missing from the delivery. Use the tools to answer the question, by passing in the strict order, the order_id and the product_name. Display all information retrieved by the tool as a JSON object. Pass the product_name to the next agent."
     ),
     tools=tools,
-    #output_key="product_name"
 )
 
-# product_retrieval_agent = LlmAgent(
-#     name="product_retrieval_agent",
-#     model="gemini-2.5-flash-lite",
-#     instruction="""
-#      for now just retrieve that product name is ketchup 
-#     """,
-#     description="Retrieve missing product from customer order",
-#     output_key="product_name"
-# )
-
-
-
-picture_analysis_agent = LlmAgent(
-    name="picture_analysis_agent",
-    model="gemini-2.5-flash-lite",
-    instruction="""for now identify that the product is missing from picture so answer is the product is missing confirmed for refund and pass missing product_name
-  """,
-    description="Check if image contains missing product based on product_name",
-    output_key="Answer"
-)
 
 refund_agent = LlmAgent(
     name="refund_agent",
@@ -75,12 +54,6 @@ Your response must be a JSON object with the following keys
     output_key="voucher",
 )
 
-# complain_processing_agent = SequentialAgent(
-#     name="complain_processing_agent",
-#     sub_agents=[product_retrieval_agent, picture_analysis_agent, refund_agent],
-#     description="This agent is designed to automate and verify customer complaints regarding missing products in ICA Supermarket online grocery orders, aiming to resolve disputes quickly and accurately using visual evidence",
-# )
-
 
 root_agent = Agent(
     model="gemini-2.5-flash",
@@ -91,8 +64,12 @@ root_agent = Agent(
       You should only accept text and not any image oor video
       When the user as provided you with a valid order_id and product_name:
       1. You should check with the `product_retrieval_agent` whether the product is missing or not from the list of ordered items. If the output key from this agent contains a product_name, go to step 2 below. Otherwise, let the user know that there isn't any missing item.
-      2. Use `get_items_from_image` by passing it the order_id and the product_name to check whether the product was present on the picture of the package taken before delivery. The tool will answer with either 'yes' or 'no'.
-      3. Let the user know about the status of the complain.
+         *   **If** the user does not provide an 'order_id' and a 'product_name', **then** do not go to the next step. Ask the user again until these 2 values are provided.
+      2. Follow the conditional logic below:
+         *   **If** the tool returns a 'product_name', **then** go to the next step to check if it is present on the picture of the package taken before delivery.
+         *   **If** the tool returns a 'product_name' that does not match with the user complain, **then** respond to the user that the product was not ordered initially.
+      3. Use `get_items_from_image` by passing it the order_id and the product_name to check whether the product was present on the picture of the package taken before delivery. The tool will answer with either 'yes' or 'no'.
+      4. Let the user know about the status of the complain.
       You should not rely on the previous history.
     """,
     tools=[AgentTool(product_retrieval_agent), get_items_from_image],
