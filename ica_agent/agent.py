@@ -15,6 +15,7 @@
 
 from google.adk.agents import Agent, SequentialAgent, LlmAgent
 from google.adk.tools.agent_tool import AgentTool
+from .tools import get_items_from_image
 from toolbox_core import ToolboxSyncClient
 
 toolbox = ToolboxSyncClient("https://toolbox-489070644303.us-central1.run.app/")
@@ -90,8 +91,9 @@ root_agent = Agent(
       You should only accept text and not any image oor video
       When the user as provided you with a valid order_id and product_name:
       1. You should check with the `product_retrieval_agent` whether the product is missing or not from the list of ordered items. If the output key from this agent contains a product_name, go to step 2 below. Otherwise, let the user know that there isn't any missing item.
-      2. Generate a picture based on the product_name.
+      2. Use `get_items_from_image` by passing it the order_id and the product_name to check whether the product was present on the picture of the package taken before delivery. The tool will answer with either 'yes' or 'no'.
+      3. Let the user know about the status of the complain.
       You should not rely on the previous history.
     """,
-    tools=[AgentTool(product_retrieval_agent)],
+    tools=[AgentTool(product_retrieval_agent), get_items_from_image],
 )
