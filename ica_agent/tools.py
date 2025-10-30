@@ -25,6 +25,7 @@ from PIL import Image
 from io import BytesIO
 import base64
 from google.cloud import storage
+from vertexai.generative_models import GenerativeModel, Part
 
 
 async def generate_image_data(tool_context: ToolContext, fact: str) -> dict:
@@ -60,3 +61,34 @@ async def generate_image_data(tool_context: ToolContext, fact: str) -> dict:
     except ValueError as ve:
         print(f"Configuration error: {ve}")
         return {"status": "error", "error_message": str(ve)}
+
+
+def get_items_from_image(orderid: str) -> str:
+   """
+    Performs multimodal analysis on an image stored in Google Cloud Storage (GCS)
+    using the Gemini 2.5 Flash model on Vertex AI.
+
+    This is typically used for image classification 
+    or visual question answering tasks.
+
+    Args:
+        orderid: The unique identifier (e.g., "ORD2025001") used to construct 
+                 the GCS path for the image: "gs://ica-adk-baskets/{orderid}.png".
+
+    Returns:
+        The generated text response from the Gemini model as a json object that holds the items in the box
+    """
+   try:
+       model = GenerativeModel("gemini-2.5-flash")
+
+       prompt = "What products are inside the box? Give the output in json format"
+
+       gcs_uri = "gs://ica-adk-baskets/" + orderid + ".png"
+
+       image_part = Part.from_uri(uri=gcs_uri, mime_type="image/png")
+
+       responses = model.generate_content([image_part, prompt])
+       return responses.text
+   except Exception as e:
+       print(f"Error classifying image from URI {gcs_uri}: {e}")
+       return "Classification failed."
