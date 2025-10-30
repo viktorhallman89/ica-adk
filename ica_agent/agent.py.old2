@@ -14,16 +14,37 @@
 
 
 from google.adk.agents import Agent, SequentialAgent, LlmAgent
+from toolbox_core import ToolboxSyncClient
+
+toolbox = ToolboxSyncClient("https://toolbox-489070644303.us-central1.run.app/")
+
+# Load all the tools
+tools = toolbox.load_toolset('my_bq_toolset')
 
 product_retrieval_agent = LlmAgent(
     name="product_retrieval_agent",
-    model="gemini-2.5-flash-lite",
-    instruction="""
-     for now just retrieve that product name is ketchup 
-    """,
-    description="Retrieve missing product from customer order",
+    model="gemini-2.5-flash",
+    description=(
+        "Agent to order information from the tool, based information passed by the user. The user should prompted to provide order_id and product_name."
+    ),
+    instruction=(
+        "You are a helpful agent who will retrieve order_id, product_id, product_name and the quantity. Ask the user to provide both order_id and product_name that is missing from the delivery. Use the tools to answer the question, by passing in the strict order, the order_id and the product_name. Display all information retrieved by the tool as a JSON object. Pass the product_name to the next agent."
+    ),
+    tools=tools,
     output_key="product_name"
 )
+
+# product_retrieval_agent = LlmAgent(
+#     name="product_retrieval_agent",
+#     model="gemini-2.5-flash-lite",
+#     instruction="""
+#      for now just retrieve that product name is ketchup 
+#     """,
+#     description="Retrieve missing product from customer order",
+#     output_key="product_name"
+# )
+
+
 
 picture_analysis_agent = LlmAgent(
     name="picture_analysis_agent",
@@ -54,7 +75,6 @@ Your response must be a JSON object with the following keys
 
 complain_processing_agent = SequentialAgent(
     name="complain_processing_agent",
-    model="gemini-2.5-flash-lite",
     sub_agents=[product_retrieval_agent, picture_analysis_agent, refund_agent],
     description="This agent is designed to automate and verify customer complaints regarding missing products in ICA Supermarket online grocery orders, aiming to resolve disputes quickly and accurately using visual evidence",
 )
