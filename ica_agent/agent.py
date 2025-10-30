@@ -37,6 +37,7 @@ product_retrieval_agent = LlmAgent(
 )
 
 
+
 insert_voucher_agent = LlmAgent(
     name="insert_voucher_agent",
     model="gemini-2.5-flash",
@@ -49,24 +50,6 @@ insert_voucher_agent = LlmAgent(
     tools=tools,
 )
 
-
-refund_agent = LlmAgent(
-    name="refund_agent",
-    model="gemini-2.5-flash-lite",
-    instruction="""
-1.  Identify Missing Item Potential Cost based on missing product_name. This value will be the basis for the refund voucher.
-2.  Generate Unique Voucher Code: Create a unique, alphanumeric refund voucher code. The code should be between 10 and 15 characters long, including a "REFUND-" prefix, and incorporate a mix of uppercase letters and numbers (e.g., `REFUND-XYZ123ABC`). Ensure the code is distinct each time.
-3.  Set Voucher Value: The monetary value of the generated voucher must be *exactly equal* to the missing product cost identified in step 1.
-4.  Determine Currency: Assume the currency is SEK unless specified otherwise in the user's request. If a different currency is explicitly mentioned with the cost, use that currency.
-5.  Create Description: Provide a concise description for the voucher, such as "Refund voucher for missing item."
-8.  Format Output: Present all the generated voucher information in a structured JSON object.
-
-Output Format:
-Your response must be a JSON object with the following keys
- """,
-    description="Based on missing item you are generating a refund voucher for the user",
-    output_key="voucher",
-)
 
 
 root_agent = Agent(

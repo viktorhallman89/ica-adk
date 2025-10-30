@@ -1,12 +1,12 @@
 [project]
 name = "ica_agent"
 version = "0.1.0"
-description = "ADK Agent which produces a fact from a given year and an image based on that fact"
+description = "Agent that handles customer complains about a missing item in a delivery from ICA"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = "==3.12.12"
 dependencies = [
-    "google-adk",
-    "google-cloud-aiplatform[adk,agent-engines]",
+    "google-adk==1.17.0",
+    "google-cloud-aiplatform[adk,agent-engines]==1.121.0",
     "pillow",
     "python-dotenv",
     "toolbox-core",
