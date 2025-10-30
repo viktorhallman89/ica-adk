@@ -63,7 +63,7 @@ async def generate_image_data(tool_context: ToolContext, fact: str) -> dict:
         return {"status": "error", "error_message": str(ve)}
 
 
-def get_items_from_image(orderid: str) -> str:
+def get_items_from_image(orderid: str, product_name: str) -> str:
    """
     Performs multimodal analysis on an image stored in Google Cloud Storage (GCS)
     using the Gemini 2.5 Flash model on Vertex AI.
@@ -81,7 +81,7 @@ def get_items_from_image(orderid: str) -> str:
    try:
        model = GenerativeModel("gemini-2.5-flash")
 
-       prompt = "What products are inside the box? Give the output in json format"
+       prompt = "Is there a " + product_name + " in the box? Answer only yes or no"
 
        gcs_uri = "gs://ica-adk-baskets/" + orderid + ".png"
 
