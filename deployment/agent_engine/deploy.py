@@ -48,12 +48,14 @@ logging.debug("deploying agent to agent engine:")
 
 remote_app = agent_engines.create(
     display_name=os.getenv("AGENT_ENGINE_NAME"),
-    description="Agent to provide facts about the year given by the user as well as an image for that fact",
+    description="Agent that handles customer complains about a missing item in a delivery from ICA",
     agent_engine=app,
     requirements=[
-        "google-cloud-aiplatform[adk,agent_engines]",
+        "google-adk",
+        "google-cloud-aiplatform[adk,agent-engines]",
         "pillow",
         "python-dotenv",
+        "toolbox-core",
     ],
     extra_packages = [
         "./ica_agent",
