@@ -37,7 +37,7 @@ tools:
       Use this tool to insert the voucher information to bigquery.
     parameters:
      - name: voucher_id
-       type: number
+       type: string
        description: generated voucher id
      - name: customer_id
        type: string
@@ -46,7 +46,7 @@ tools:
        type: string 
        description: The order_id supplied by the user.
      - name: total_amount
-       type: number
+       type: string
        description: The value of the voucher.
     statement: |
       INSERT INTO customer_data.Vouchers (voucher_id, customer_id, order_id, total_amount) VALUES (@voucher_id, @customer_id , @order_id , @total_amount);

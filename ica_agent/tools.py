@@ -19,24 +19,24 @@ from google import genai
 from google.genai import types
 
 from google.adk.tools.tool_context import ToolContext
-from google.genai.types import GenerateContentConfig, Part
+from google.genai.types import GenerateContentConfig, Part as part2
 
 from PIL import Image
 from io import BytesIO
 import base64
+
 from google.cloud import storage
 from vertexai.generative_models import GenerativeModel, Part
 
 
-async def generate_image_data(tool_context: ToolContext, fact: str) -> dict:
-    print(f"Tool running: Generating image for '{fact}'...")
+async def generate_voucher(tool_context: ToolContext, voucher_id: str, total_amount: str) -> dict:
     
     try:      
         client = genai.Client()
 
         response = client.models.generate_images(
             model='imagen-4.0-generate-001',
-            prompt=f"Generate a single image in futuristic style representing the following fact: {fact}",
+            prompt=f"Generate a single image which represents the voucher for the user. The voucher should include the following information: Voucher ID {voucher_id}, Voucher Amount {total_amount}, in the ICA supermarket style in Sweden",
             config=types.GenerateImagesConfig(
                 number_of_images=1,
                 include_rai_reason=True,
@@ -45,7 +45,7 @@ async def generate_image_data(tool_context: ToolContext, fact: str) -> dict:
         )
 
         image_bytes = response.generated_images[0].image.image_bytes
-        blob_part = Part.from_bytes(data=image_bytes, mime_type="image/png")
+        blob_part = part2.from_bytes(data=image_bytes, mime_type="image/png")
         
         try:
             res = await tool_context.save_artifact(filename="image.png", artifact=blob_part)
@@ -61,6 +61,7 @@ async def generate_image_data(tool_context: ToolContext, fact: str) -> dict:
     except ValueError as ve:
         print(f"Configuration error: {ve}")
         return {"status": "error", "error_message": str(ve)}
+
 
 
 def get_items_from_image(orderid: str, product_name: str) -> str:

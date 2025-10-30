@@ -15,7 +15,8 @@
 
 from google.adk.agents import Agent, SequentialAgent, LlmAgent
 from google.adk.tools.agent_tool import AgentTool
-from .tools import get_items_from_image
+from google.adk.tools.load_artifacts_tool import load_artifacts_tool
+from .tools import get_items_from_image, generate_voucher
 from toolbox_core import ToolboxSyncClient
 
 toolbox = ToolboxSyncClient("https://toolbox-489070644303.us-central1.run.app/")
@@ -31,6 +32,19 @@ product_retrieval_agent = LlmAgent(
     ),
     instruction=(
         "You are a helpful agent who will retrieve order_id, product_id, product_name and the quantity. Ask the user to provide both order_id and product_name that is missing from the delivery. Use the tools to answer the question, by passing in the strict order, the order_id and the product_name. Display all information retrieved by the tool as a JSON object. Pass the product_name to the next agent."
+    ),
+    tools=tools,
+)
+
+
+insert_voucher_agent = LlmAgent(
+    name="insert_voucher_agent",
+    model="gemini-2.5-flash",
+    description=(
+        "Agent to insert a voucher row with the tool, based information passed by the root agent."
+    ),
+    instruction=(
+        "You are a database agent who will insert the voucher_id, customer_id, order_id and the total_amount. "
     ),
     tools=tools,
 )
@@ -69,8 +83,13 @@ root_agent = Agent(
          *   **If** the tool returns a 'product_name', **then** go to the next step to check if it is present on the picture of the package taken before delivery.
          *   **If** the tool returns a 'product_name' that does not match with the user complain, **then** respond to the user that the product was not ordered initially.
       3. Use `get_items_from_image` by passing it the order_id and the product_name to check whether the product was present on the picture of the package taken before delivery. The tool will answer with either 'yes' or 'no'.
-      4. Let the user know about the status of the complain.
+         *   **If** the tool returns 'no', **then** go to the next step to generate a voucher for the user
+         *   **If** the tool returns a 'yes', **then** respond to the user that the product was present in the delivery.
+      4. You are now creating a voucher for the user. Generate a voucher_id as a string. Generate also a total_amount as a string which matches the product value. This total_amount should be in Swedish Krona (SEK).
+      5. Use the tool `insert_voucher_agent` in order to create a voucher entry, by passing voucher_id, customer_id, order_id and the total_amount.
+      6. Generate a nice image of the voucher with the tool `generate_voucher` with the voucher_id, the total_amount and a product picture, with the ICA logo.
+      7. Display the voucher to the user as a proof.
       You should not rely on the previous history.
     """,
-    tools=[AgentTool(product_retrieval_agent), get_items_from_image],
+    tools=[AgentTool(product_retrieval_agent), get_items_from_image, AgentTool(insert_voucher_agent), generate_voucher, load_artifacts_tool],
 )
