@@ -84,7 +84,7 @@ root_agent = Agent(
          *   **If** the tool returns a 'product_name' that does not match with the user complain, **then** respond to the user that the product was not ordered initially.
       3. Use `get_items_from_image` by passing it the order_id and the product_name to check whether the product was present on the picture of the package taken before delivery. The tool will answer with either 'yes' or 'no'.
          *   **If** the tool returns 'no', **then** go to the next step to generate a voucher for the user
-         *   **If** the tool returns a 'yes', **then** respond to the user that the product was present in the delivery.
+         *   **If** the tool returns a 'yes', **then** respond to the user that the product was present in the delivery. Show the image by from the following HTML code: <img src="https://storage.cloud.google.com/ica-adk-baskets/'order_id'.png" />
       4. You are now creating a voucher for the user. Generate a voucher_id as a string. Generate also a total_amount as a string which matches the product value. This total_amount should be in Swedish Krona (SEK).
       5. Use the tool `insert_voucher_agent` in order to create a voucher entry, by passing voucher_id, customer_id, order_id and the total_amount.
       6. Generate a nice image of the voucher with the tool `generate_voucher` with the voucher_id, the total_amount and a product picture, with the ICA logo.
